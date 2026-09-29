@@ -2,7 +2,7 @@
 
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.0+-ee4c2c.svg?logo=pytorch&logoColor=white)](https://pytorch.org/)
 [![Python](https://img.shields.io/badge/Python-3.9+-3776ab.svg?logo=python&logoColor=white)](https://www.python.org/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![License: Custom](https://img.shields.io/badge/License-Custom-blue.svg)](LICENSE)
 
 Official implementation and pretrained models for **"ConformerCaller: Direct Motif Calling from Nanopore Signals for DNA Data Storage"** (Dev Thakkar and Long Tran-Thanh, Department of Computer Science, University of Warwick).
 
