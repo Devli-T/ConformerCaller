@@ -1,0 +1,119 @@
+"""
+ConformerCaller — Central Configuration
+========================================
+All paths, constants, and shared configuration for the ConformerCaller project.
+
+DATA_ROOT should be set to the directory containing your local copy of the
+Helixworks dataset (FAST5 files, master_db.csv, and Reference/ folder).
+Modify DATA_ROOT below or set the CONFORMERCALLER_DATA_ROOT environment
+variable before running any scripts.
+"""
+
+import os
+from pathlib import Path
+import torch
+
+
+# ============================================================================
+# Paths
+# ============================================================================
+
+# Workspace root (where code lives)
+PROJECT_ROOT = Path(__file__).parent.resolve()
+
+# Data root — set via environment variable or edit the default below
+DATA_ROOT = Path(os.environ.get("CONFORMERCALLER_DATA_ROOT", "/path/to/helixworks_data"))
+
+# Data paths
+FAST5_DIR   = DATA_ROOT / "FAST5"
+FASTQ_DIR   = DATA_ROOT / "FASTQ"
+MASTER_DB_PATH = DATA_ROOT / "master_db.csv"
+ENCODED_CSV_PATH = DATA_ROOT / "HELIX01-04-encoded.csv"
+REFERENCE_DIR = DATA_ROOT / "Reference"
+COMPLETED_LIBRARY_PATH = REFERENCE_DIR / "completed_library.csv"
+MOTIF_DESIGN_PATH      = REFERENCE_DIR / "motif_design_sequences.csv"
+
+# Output paths — preprocessed data and model checkpoints
+PROCESSED_DATA_DIR = DATA_ROOT / "processed_conformercaller"
+TRAINING_DATA_DIR  = PROCESSED_DATA_DIR / "training_data"
+MODEL_SAVE_DIR     = PROJECT_ROOT / "checkpoints"
+RESULTS_DIR        = PROJECT_ROOT / "results"
+
+# Ensure output directories exist
+for d in [MODEL_SAVE_DIR, RESULTS_DIR]:
+    d.mkdir(parents=True, exist_ok=True)
+
+
+# ============================================================================
+# Device Configuration
+# ============================================================================
+
+def get_device():
+    """Select the best available compute device (CUDA > MPS > CPU)."""
+    if torch.cuda.is_available():
+        return torch.device("cuda")
+    elif torch.backends.mps.is_available():
+        return torch.device("mps")
+    else:
+        return torch.device("cpu")
+
+DEVICE = get_device()
+
+
+# ============================================================================
+# Motif Library Constants
+# ============================================================================
+
+PRIMER_CYCLES      = {0, 11}
+ADDRESS_CYCLES     = {1, 2}
+PAYLOAD_CYCLES     = {3, 4, 5, 6, 7, 8, 9, 10}   # Eight payload cycles
+SPLINT_CYCLE_RANGE = range(89, 100)
+
+N_VARIANTS       = 8
+N_PAYLOAD_MOTIFS = len(PAYLOAD_CYCLES) * N_VARIANTS  # 64
+N_CLASSES        = N_PAYLOAD_MOTIFS + 1               # +1 for CTC blank (index 0)
+CTC_BLANK        = 0
+
+
+# ============================================================================
+# Signal Processing Constants
+# ============================================================================
+
+SIGNAL_NORM_METHOD = "mad"   # Median Absolute Deviation normalisation
+SIGNAL_CLIP_MIN    = -5.0
+SIGNAL_CLIP_MAX    =  5.0
+
+MIN_SIGNAL_LENGTH = 1000     # Reads shorter than this are likely fragments
+MAX_SIGNAL_LENGTH = 20_000   # Truncate at 20 k samples
+
+
+# ============================================================================
+# Training Defaults (local CPU/single-GPU)
+# ============================================================================
+
+DEFAULT_TRAIN_CONFIG = {
+    "batch_size":     4,
+    "learning_rate":  3e-4,
+    "weight_decay":   1e-5,
+    "n_epochs":       100,
+    "patience":       15,
+    "grad_clip_norm": 5.0,
+    "lr_scheduler":   "cosine",
+    "warmup_epochs":  5,
+    "val_fraction":   0.15,
+    "test_fraction":  0.10,
+    "min_payload_motifs":   4,
+    "forward_strand_only":  False,
+    "max_signal_len":       MAX_SIGNAL_LENGTH,
+}
+
+
+# ============================================================================
+# master_db.csv Reading Configuration
+# ============================================================================
+
+MASTER_DB_CHUNKSIZE = 100_000
+MASTER_DB_COLUMNS = [
+    "read_id", "filename", "fastq_id", "HW_Address",
+    "strand", "start_end", "library_motif"
+]

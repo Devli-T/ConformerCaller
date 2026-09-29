@@ -1,0 +1,212 @@
+{
+  "n_reads": 66843,
+  "checkpoint_epoch": 48,
+  "checkpoint_val_loss": 0.7970549756190071,
+  "greedy": {
+    "detection_pct": 92.1084103181096,
+    "levenshtein": 0.8630009321612973,
+    "exact_match_pct": 17.585985069491194,
+    "mean_pred_len": 6.103376568975061,
+    "mean_tgt_len": 5.179330670376853
+  },
+  "confidence_0.70": {
+    "detection_pct": 82.31043522795731,
+    "levenshtein": 0.8634141303944446,
+    "exact_match_pct": 20.36264081504421,
+    "mean_pred_len": 5.005221189952575
+  },
+  "per_cycle_accuracy": {
+    "3": {
+      "correct": 34090,
+      "total": 37718,
+      "accuracy": 0.9038125033140676
+    },
+    "4": {
+      "correct": 41371,
+      "total": 46002,
+      "accuracy": 0.8993304638928742
+    },
+    "5": {
+      "correct": 44435,
+      "total": 48287,
+      "accuracy": 0.9202269762047756
+    },
+    "6": {
+      "correct": 41645,
+      "total": 45983,
+      "accuracy": 0.9056607876824043
+    },
+    "7": {
+      "correct": 39333,
+      "total": 43420,
+      "accuracy": 0.9058728696453248
+    },
+    "8": {
+      "correct": 36395,
+      "total": 40065,
+      "accuracy": 0.9083988518657182
+    },
+    "9": {
+      "correct": 30586,
+      "total": 34128,
+      "accuracy": 0.8962142522269104
+    },
+    "10": {
+      "correct": 25419,
+      "total": 28704,
+      "accuracy": 0.8855560200668896
+    }
+  },
+  "top_confusions": [
+    {
+      "count": 101,
+      "true": "ltm8_4x1",
+      "predicted": "ltm8_4x6"
+    },
+    {
+      "count": 83,
+      "true": "ltm8_4x2",
+      "predicted": "ltm8_4x6"
+    },
+    {
+      "count": 82,
+      "true": "ltm8_4x3",
+      "predicted": "ltm8_4x6"
+    },
+    {
+      "count": 79,
+      "true": "ltm8_4x6",
+      "predicted": "ltm8_4x3"
+    },
+    {
+      "count": 67,
+      "true": "ltm8_5x1",
+      "predicted": "ltm8_5x5"
+    },
+    {
+      "count": 66,
+      "true": "ltm8_7x4",
+      "predicted": "ltm8_7x1"
+    },
+    {
+      "count": 65,
+      "true": "ltm8_4x8",
+      "predicted": "ltm8_4x6"
+    },
+    {
+      "count": 64,
+      "true": "ltm8_4x6",
+      "predicted": "ltm8_4x1"
+    },
+    {
+      "count": 63,
+      "true": "ltm8_3x1",
+      "predicted": "ltm8_3x8"
+    },
+    {
+      "count": 60,
+      "true": "ltm8_5x2",
+      "predicted": "ltm8_5x1"
+    },
+    {
+      "count": 59,
+      "true": "ltm8_4x1",
+      "predicted": "ltm8_4x2"
+    },
+    {
+      "count": 58,
+      "true": "ltm8_5x5",
+      "predicted": "ltm8_5x1"
+    },
+    {
+      "count": 57,
+      "true": "ltm8_7x1",
+      "predicted": "ltm8_7x4"
+    },
+    {
+      "count": 54,
+      "true": "ltm8_5x7",
+      "predicted": "ltm8_5x1"
+    },
+    {
+      "count": 54,
+      "true": "ltm8_5x3",
+      "predicted": "ltm8_5x1"
+    },
+    {
+      "count": 54,
+      "true": "ltm8_5x1",
+      "predicted": "ltm8_5x2"
+    },
+    {
+      "count": 51,
+      "true": "ltm8_7x6",
+      "predicted": "ltm8_7x4"
+    },
+    {
+      "count": 51,
+      "true": "ltm8_5x1",
+      "predicted": "ltm8_5x3"
+    },
+    {
+      "count": 51,
+      "true": "ltm8_4x3",
+      "predicted": "ltm8_4x2"
+    },
+    {
+      "count": 51,
+      "true": "ltm8_4x3",
+      "predicted": "ltm8_4x1"
+    },
+    {
+      "count": 50,
+      "true": "ltm8_4x8",
+      "predicted": "ltm8_4x2"
+    },
+    {
+      "count": 50,
+      "true": "ltm8_4x6",
+      "predicted": "ltm8_4x8"
+    },
+    {
+      "count": 50,
+      "true": "ltm8_3x7",
+      "predicted": "ltm8_3x1"
+    },
+    {
+      "count": 48,
+      "true": "ltm8_5x3",
+      "predicted": "ltm8_5x5"
+    },
+    {
+      "count": 48,
+      "true": "ltm8_4x8",
+      "predicted": "ltm8_4x3"
+    },
+    {
+      "count": 48,
+      "true": "ltm8_4x1",
+      "predicted": "ltm8_4x8"
+    },
+    {
+      "count": 48,
+      "true": "ltm8_3x8",
+      "predicted": "ltm8_3x1"
+    },
+    {
+      "count": 46,
+      "true": "ltm8_5x2",
+      "predicted": "ltm8_5x5"
+    },
+    {
+      "count": 46,
+      "true": "ltm8_4x6",
+      "predicted": "ltm8_4x2"
+    },
+    {
+      "count": 46,
+      "true": "ltm8_4x4",
+      "predicted": "ltm8_4x2"
+    }
+  ]
+}
