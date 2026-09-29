@@ -233,4 +233,6 @@ If you find this work or codebase useful in your research, please cite:
 
 ## 📄 License
 
-This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
+This project uses a custom license. See the [LICENSE](LICENSE) file for details.
+
+
