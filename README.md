@@ -149,14 +149,17 @@ Run inference on raw FAST5 files using the provided pretrained model:
 python src/inference/predict.py \
     --checkpoint checkpoints/conformer/best_model.pt \
     --fast5-dir /path/to/fast5_files \
+    --library /path/to/completed_library.csv \
     --output results/predictions.csv \
     --threshold 0.70
 ```
 
+> **Note on `--library`:** If you have set `CONFORMERCALLER_DATA_ROOT=/path/to/helixworks_data` in your environment, `--library` is automatically located under `$CONFORMERCALLER_DATA_ROOT/Reference/completed_library.csv`.
+
 The output CSV contains per-read predicted payload motif sequences:
 ```csv
 read_id,predicted_motifs,n_motifs,confidence
-0001a79f-683a-442f-8703-a4176378a3c5,"ltm8_3x1,ltm8_4x6,ltm8_5x2,ltm8_6x4,ltm8_7x1,ltm8_8x3,ltm8_9x8,ltm8_10x2",8,0.942
+0001a79f-683a-442f-8703-a4176378a3c5,"ltm8_3x1|ltm8_4x6|ltm8_5x2|ltm8_6x4|ltm8_7x1|ltm8_8x3|ltm8_9x8|ltm8_10x2",8,0.942
 ```
 
 ---

@@ -38,6 +38,10 @@ ENV/
 env.bak/
 venv.bak/
 
+# Generated inference outputs (not for repo)
+results/predictions*.csv
+results/*.csv
+
 # IDE / Editor artifacts
 .idea/
 .vscode/
