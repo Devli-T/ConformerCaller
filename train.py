@@ -2,9 +2,9 @@
 train.py — Main ConformerCaller Training Entry Point
 =================================================
 Usage:
-    python3.12 train.py --arch conformer --epochs 100
-    python3.12 train.py --arch benchmark --epochs 100  # baseline
-    python3.12 train.py --smoke-test                   # quick 5-batch test
+    python train.py --arch conformer --epochs 100
+    python train.py --arch benchmark --epochs 100  # baseline
+    python train.py --smoke-test                   # quick 5-batch test
 
 Checkpoints and results are saved locally.
 """
@@ -27,7 +27,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 
 import torch
 from config import (
-    COMPLETED_LIBRARY_PATH, PROCESSED_DATA_DIR,
+    COMPLETED_LIBRARY_PATH, MASTER_DB_PATH, PROCESSED_DATA_DIR,
     MODEL_SAVE_DIR, RESULTS_DIR, DEVICE,
     DEFAULT_TRAIN_CONFIG,
 )
@@ -56,6 +56,10 @@ def parse_args():
                    help="Where to save model checkpoints")
     p.add_argument("--resume",       type=Path,  default=None,
                    help="Path to checkpoint to resume from")
+    p.add_argument("--master-db",    type=Path,  default=MASTER_DB_PATH,
+                   help="HELIX01-04_master_db.txt (default: config.MASTER_DB_PATH)")
+    p.add_argument("--library",      type=Path,  default=COMPLETED_LIBRARY_PATH,
+                   help="Path to completed_library.csv (default: config.COMPLETED_LIBRARY_PATH)")
     p.add_argument("--smoke-test",   action="store_true",
                    help="Run 5 batches only to verify the pipeline works")
     return p.parse_args()
@@ -66,7 +70,7 @@ def main():
 
     # ── Load motif library ───────────────────────────────────────────────────
     logger.info("Loading motif library…")
-    lib = MotifLibrary(COMPLETED_LIBRARY_PATH)
+    lib = MotifLibrary(args.library)
     logger.info(f"  {lib}")
 
     # ── Load dataset index ───────────────────────────────────────────────────
@@ -104,35 +108,25 @@ def main():
     else:
         # Smoke test: build a tiny index from first FAST5 file
         logger.info("SMOKE TEST MODE — using tiny subset of data")
-        from config import FAST5_DIR, MASTER_DB_PATH
+        from config import FAST5_DIR
         from src.data.fast5_reader import Fast5Reader
         from src.data.label_builder import LabelBuilder
 
-        f5_files = sorted(FAST5_DIR.glob("*.fast5"))[:1]
+        f5_files = sorted(p for p in FAST5_DIR.glob("*.fast5") if not p.name.startswith("."))[:1]
         logger.info(f"  Using FAST5 file: {f5_files[0].name}")
 
-        # Get read IDs from this file
+        # Read IDs contained in this file
         import vbz_h5py_plugin, h5py
         with h5py.File(f5_files[0], "r") as f:
-            read_ids_in_file = {k.replace("read_", "") for k in list(f.keys())[:50]}
-        logger.info(f"  Checking {len(read_ids_in_file)} reads from first 50 in file")
+            read_ids_in_file = {k.replace("read_", "") for k in f.keys()}
+        logger.info(f"  {len(read_ids_in_file):,} reads in file; scanning master database for their labels "
+                    "(takes a minute or two)…")
 
-        # Build minimal label records
+        # Minimal label records (any read with at least one payload motif)
         builder = LabelBuilder(lib, min_payload_cycles=1, forward_strand_only=False)
-        label_records = builder.build(MASTER_DB_PATH, max_reads=500)
-
-        # Filter to those in file
-        label_records = {rid: rec for rid, rec in label_records.items()
-                         if rid in read_ids_in_file}
+        label_records = builder.build(args.master_db, only_read_ids=read_ids_in_file)
+        label_records = dict(list(label_records.items())[:500])
         logger.info(f"  Found {len(label_records)} matching reads with labels")
-
-        if len(label_records) < 5:
-            # Relax filter — take any reads we can match
-            builder2 = LabelBuilder(lib, min_payload_cycles=1, forward_strand_only=False)
-            label_records_all = builder2.build(MASTER_DB_PATH, max_reads=5000)
-            label_records = {rid: rec for rid, rec in label_records_all.items()
-                             if rid in read_ids_in_file}
-            logger.info(f"  After relaxed filter: {len(label_records)} reads")
 
         fast5_index = {rid: f5_files[0] for rid in label_records}
         full_idx = MotifDatasetIndex(label_records, fast5_index)

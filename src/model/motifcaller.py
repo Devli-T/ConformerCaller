@@ -4,11 +4,10 @@ Model Architectures for ConformerCaller
 Implements multiple architectures for benchmarking and selection.
 
 Baseline:
-  - Benchmark: CNN + BiGRU + CTC (from Parvfect/Motif-Calling)
+  - Benchmark: CNN + BiGRU + CTC
 
 Explored architectures (inspired by speech recognition research):
   - ConformerCaller: CNN + Conformer encoder + CTC
-    (Conformer = Convolution-augmented Transformer, used in Whisper/wav2vec2)
     Best for capturing both local (conv) and global (attention) patterns.
   - CausalConvCaller: Depthwise separable causal CNN (CTC)
     Fast, low-memory, good for streaming inference.
@@ -86,7 +85,7 @@ class CausalCNNConfig:
 
 class BenchmarkCaller(nn.Module):
     """
-    CNN + BiGRU + CTC baseline (as used in the original synthetic-data paper).
+    CNN + BiGRU + CTC baseline.
 
     Input : (B, 1, T) normalised signal
     Output: (T', B, C) log-probabilities for CTC
@@ -277,12 +276,6 @@ class ConformerCaller(nn.Module):
     1. CNN subsampler (local signal feature extraction + downsampling)
     2. Stack of Conformer blocks (local + global context via conv + attention)
     3. Linear output layer → log-softmax for CTC
-
-    This architecture is inspired by:
-    - Conformer (Gulati et al., 2020): "Conformer: Convolution-augmented
-      Transformer for Speech Recognition"
-    - Bonito (ONT's own neural basecaller)
-    - The key analogy: DNA translocation speed variation ≈ speech rate variation
 
     Input : (B, 1, T)  raw normalised signal
     Output: (T', B, C) log-probabilities

@@ -8,15 +8,15 @@ Usage:
     # Greedy decoding (standard)
     python src/inference/predict.py \
         --checkpoint checkpoints/conformer/best_model.pt \
-        --fast5-dir /Volumes/Expansion/Helixwork_Data/FAST5 \
-        --library /Volumes/Expansion/Helixwork_Data/Reference/completed_library.csv \
+        --fast5-dir /path/to/data_root/FAST5 \
+        --library /path/to/data_root/Reference/completed_library.csv \
         --output results/predictions.csv
 
     # Confidence-filtered decoding (e.g. tau >= 0.70)
     python src/inference/predict.py \
         --checkpoint checkpoints/conformer/best_model.pt \
-        --fast5-dir /Volumes/Expansion/Helixwork_Data/FAST5 \
-        --library /Volumes/Expansion/Helixwork_Data/Reference/completed_library.csv \
+        --fast5-dir /path/to/data_root/FAST5 \
+        --library /path/to/data_root/Reference/completed_library.csv \
         --threshold 0.70 \
         --output results/predictions_filtered.csv
 
@@ -148,54 +148,28 @@ def predict_batch(
 
 
 def resolve_library_path(explicit_path: Optional[Path]) -> Path:
-    """Resolve completed_library.csv location with helpful fallbacks."""
-    if explicit_path is not None and explicit_path.exists():
+    """Locate completed_library.csv (--library, else <DATA_ROOT>/Reference/)."""
+    if explicit_path is not None:
+        if not explicit_path.exists():
+            raise FileNotFoundError(f"Specified library file not found: {explicit_path}")
         return explicit_path
 
-    if explicit_path is not None and not explicit_path.exists():
-        raise FileNotFoundError(f"Specified library file not found: {explicit_path}")
-
-    # Check environment variable
-    env_root = os.environ.get("CONFORMERCALLER_DATA_ROOT")
-    if env_root:
-        candidate = Path(env_root) / "Reference" / "completed_library.csv"
-        if candidate.exists():
-            return candidate
-
-    # Check standard local volume path if available
-    local_default = Path("/Volumes/Expansion/Helixwork_Data/Reference/completed_library.csv")
-    if local_default.exists():
-        return local_default
-
-    # Check config.py default
-    try:
-        from config import COMPLETED_LIBRARY_PATH
-        if COMPLETED_LIBRARY_PATH.exists():
-            return COMPLETED_LIBRARY_PATH
-    except (ImportError, AttributeError):
-        pass
+    from config import COMPLETED_LIBRARY_PATH
+    if COMPLETED_LIBRARY_PATH.exists():
+        return COMPLETED_LIBRARY_PATH
 
     raise FileNotFoundError(
         "Could not locate completed_library.csv.\n"
-        "Please provide --library /path/to/Reference/completed_library.csv\n"
-        "or set the CONFORMERCALLER_DATA_ROOT environment variable."
+        "Pass --library /path/to/completed_library.csv, or set "
+        "CONFORMERCALLER_DATA_ROOT (see scripts/prepare_data.py)."
     )
 
 
-def resolve_fast5_dir(explicit_path: Path) -> Path:
-    """Resolve FAST5 directory, correcting common path typos (e.g. /Expansion vs /Volumes/Expansion)."""
-    if explicit_path.exists():
-        return explicit_path
-
-    # Handle /Expansion/... -> /Volumes/Expansion/... on macOS
-    p_str = str(explicit_path)
-    if p_str.startswith("/Expansion"):
-        candidate = Path("/Volumes" + p_str)
-        if candidate.exists():
-            logger.info(f"Auto-corrected path: {explicit_path} -> {candidate}")
-            return candidate
-
-    raise FileNotFoundError(f"FAST5 directory not found: {explicit_path}")
+def list_fast5_files(fast5_dir: Path) -> List[Path]:
+    """List .fast5 files, ignoring hidden files (e.g. macOS ._ sidecars on exFAT)."""
+    if not fast5_dir.exists():
+        raise FileNotFoundError(f"FAST5 directory not found: {fast5_dir}")
+    return sorted(p for p in fast5_dir.glob("*.fast5") if not p.name.startswith("."))
 
 
 def predict_fast5_dir(
@@ -217,7 +191,6 @@ def predict_fast5_dir(
     from src.data.fast5_reader import mad_normalize
 
     # Resolve paths
-    fast5_dir = resolve_fast5_dir(fast5_dir)
     library_path = resolve_library_path(library_path)
 
     device = DEVICE
@@ -229,7 +202,7 @@ def predict_fast5_dir(
     lib = MotifLibrary(library_path)
     model, arch = load_model(checkpoint_path, device)
 
-    fast5_files = sorted(fast5_dir.glob("*.fast5"))
+    fast5_files = sorted(p for p in fast5_dir.glob("*.fast5") if not p.name.startswith("."))  # skip macOS ._ sidecar files
     if not fast5_files:
         raise FileNotFoundError(f"No .fast5 files found in {fast5_dir}")
     logger.info(f"Found {len(fast5_files)} FAST5 file(s)")

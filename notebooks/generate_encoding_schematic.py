@@ -1,16 +1,9 @@
-"""generate_encoding_schematic.py.
-
+"""
 ================================
 Generates results/paper/encoding_schematic.png
 
-Publication-ready schematic for motif-based DNA storage encoding and decoding.
-Organized into three clean panels:
-  (a) In silico encoding and physical oligo assembly
-  (b) Oxford Nanopore sequencing and ionic current acquisition
-  (c) Decoding paradigms: Traditional two-stage pipeline vs. End-to-end Conformer
-
 Run from project root:
-    MPLCONFIGDIR=/tmp/mpl python3.12 notebooks/generate_encoding_schematic.py
+    python3.12 notebooks/generate_encoding_schematic.py
 """
 
 from pathlib import Path

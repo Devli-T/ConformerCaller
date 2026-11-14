@@ -4,7 +4,7 @@ generate_architecture_diagram.py
 Generates results/paper/architecture_diagram.png
 
 Run from project root:
-    MPLCONFIGDIR=/tmp/mpl python3.12 notebooks/generate_architecture_diagram.py
+    python3.12 notebooks/generate_architecture_diagram.py
 """
 
 from pathlib import Path

@@ -38,9 +38,10 @@ ENV/
 env.bak/
 venv.bak/
 
-# Generated inference outputs (not for repo)
-results/predictions*.csv
-results/*.csv
+# Generated inference and evaluation outputs (keep results/paper/ tracked)
+results/*
+!results/paper/
+!results/paper/**
 
 # IDE / Editor artifacts
 .idea/
@@ -50,15 +51,12 @@ results/*.csv
 *~
 .DS_Store
 
-# Large datasets & raw data (FAST5, large NPZ files)
+# Large datasets, archives, & local CONFORMERCALLER_DATA_ROOT (default: ./data)
+data/
 *.fast5
 *.fastq
 *.fastq.gz
-data/FAST5/
-data/FASTQ/
-data/processed_conformercaller/
-data/signal_shards/*.npz
-data/dataset_index/*.npz
+*.7z
 
 # Logs & temp files
 *.log

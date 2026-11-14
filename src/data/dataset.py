@@ -101,6 +101,35 @@ class MotifDatasetIndex:
         return subset(train_idx), subset(val_idx), subset(test_idx)
 
 
+    def split_by_manifest(
+        self,
+        train_ids: set,
+        val_ids:   set,
+        test_ids:  set,
+    ) -> Tuple["MotifDatasetIndex", "MotifDatasetIndex", "MotifDatasetIndex"]:
+        """
+        Split using fixed read-ID lists (e.g. the split published with the
+        paper in ``splits/``). Reads that are in none of the lists are dropped,
+        so this also works when only part of the FAST5 data is available.
+        """
+        buckets = {"train": [], "val": [], "test": []}
+        for e in self.entries:
+            rid = e[0]
+            if rid in test_ids:
+                buckets["test"].append(e)
+            elif rid in val_ids:
+                buckets["val"].append(e)
+            elif rid in train_ids:
+                buckets["train"].append(e)
+
+        def subset(entries):
+            ds = MotifDatasetIndex.__new__(MotifDatasetIndex)
+            ds.entries = entries
+            return ds
+
+        return subset(buckets["train"]), subset(buckets["val"]), subset(buckets["test"])
+
+
 class MotifSignalDataset(Dataset):
     """
     PyTorch Dataset for (signal, label_sequence) pairs.

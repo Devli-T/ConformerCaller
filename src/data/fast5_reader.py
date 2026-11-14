@@ -221,7 +221,7 @@ def build_fast5_index(fast5_dir: Path) -> Dict[str, Path]:
     """
     from tqdm import tqdm
 
-    fast5_files = sorted(fast5_dir.glob("*.fast5"))
+    fast5_files = sorted(p for p in fast5_dir.glob("*.fast5") if not p.name.startswith("."))  # skip macOS ._ sidecar files
     logger.info(f"Building index for {len(fast5_files)} FAST5 files…")
 
     index: Dict[str, Path] = {}

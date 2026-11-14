@@ -10,19 +10,26 @@ This allows:
   3. Scalable chunking across cloud or high-performance compute clusters
 
 Usage:
-    # Extract full dataset into shards of 10,000 reads each
-    python3 src/data/extract_signals_sharded.py \
-        --index-dir data/dataset_index_full \
-        --shard-size 10000 \
-        --out-dir data/signal_shards
+    # Test reads only (≈ 7 shards, enough to reproduce the paper evaluation)
+    python src/data/extract_signals_sharded.py \
+        --index-dir $CONFORMERCALLER_DATA_ROOT/processed/dataset_index \
+        --splits test
 
-    # Resume from a specific shard (if interrupted)
-    python3 src/data/extract_signals_sharded.py \
-        --index-dir ... --out-dir ... --start-shard 5
+    # Everything (needed for training; ~27 GB of shards for the full dataset)
+    python src/data/extract_signals_sharded.py \
+        --index-dir $CONFORMERCALLER_DATA_ROOT/processed/dataset_index
+
+    # Resume an interrupted run
+    python src/data/extract_signals_sharded.py --index-dir ... --start-shard 5
+
+Shards are written to <index-dir>/signal_shards/ together with
+shard_split_ids.json (which split each read in each shard belongs to — used
+by the Colab training notebook).
 """
 
 import argparse
 import gc
+import json
 import logging
 import pickle
 import sys
@@ -74,6 +81,7 @@ def extract_shards(
     # ── Step 1: Collect all (read_id, fast5_path) pairs ───────────────────────
     logger.info("Loading dataset index entries (streaming, no full index in RAM)…")
     all_entries = []  # list of (read_id, fast5_path)
+    split_of = {}     # read_id -> split name
 
     for split in splits:
         pkl = index_dir / f"dataset_{split}.pkl"
@@ -84,6 +92,7 @@ def extract_shards(
             idx = pickle.load(f)
         for rid, f5path, _ in idx.entries:
             all_entries.append((rid, f5path))
+            split_of[rid] = split
         logger.info(f"  {split}: {len(idx.entries):,} entries")
         del idx
         gc.collect()
@@ -169,6 +178,27 @@ def extract_shards(
         f.write(f"shard_size={shard_size}\n")
         for sf in shard_files:
             f.write(f"{sf.name}\n")
+
+    # ── Step 4: shard_split_ids.json (split membership of every shard) ────────
+    shard_split_ids = {}
+    for sf in shard_files:
+        with np.load(sf) as z:
+            keys = list(z.files)
+        per_split = {sp: [k for k in keys if split_of.get(k) == sp] for sp in ("train", "val", "test")}
+        n_assigned = sum(len(v) for v in per_split.values())
+        shard_split_ids[sf.name] = {
+            "total": len(keys),
+            "train": len(per_split["train"]),
+            "val":   len(per_split["val"]),
+            "test":  len(per_split["test"]),
+            "unassigned": len(keys) - n_assigned,
+            "train_ids": per_split["train"],
+            "val_ids":   per_split["val"],
+            "test_ids":  per_split["test"],
+        }
+    with open(out_dir / "shard_split_ids.json", "w") as f:
+        json.dump(shard_split_ids, f)
+    logger.info(f"  Split membership: {out_dir / 'shard_split_ids.json'}")
 
     total_mb = sum(sf.stat().st_size for sf in shard_files) / 1e6
     logger.info(f"\n✓ Extraction complete: {len(shard_files)} shards, {total_mb:.0f} MB total")

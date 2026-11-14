@@ -140,17 +140,96 @@ class LabelBuilder:
             strand_orientation= orientation,
         )
 
+    # ── Input formats ────────────────────────────────────────────────────────
+    # 1. "wide" : one row per read, pipe-delimited motif/strand/position fields
+    #             (columns: read_id, filename, fastq_id, HW_Address, strand,
+    #              start_end, library_motif) — the format of the internal
+    #              master_db.csv the model was originally trained from.
+    # 2. "long" : one row per motif hit, space-delimited, no header
+    #             (read_id filename barcode strand start end motif cycle index)
+    #             — the format of the public Zenodo file
+    #             HELIX01-04_master_db.txt.
+    # The format is detected automatically; both give identical payload labels.
+    LONG_COLUMNS = ["read_id", "filename", "barcode", "strand",
+                    "start", "end", "motif", "cycle", "index"]
+
+    @staticmethod
+    def detect_format(path: Path) -> str:
+        """Return "wide" or "long" by inspecting the first line of the file."""
+        with open(path, "r", encoding="utf-8") as f:
+            first = f.readline()
+        return "wide" if "library_motif" in first else "long"
+
+    def _iter_rows(self, path: Path):
+        """Yield one wide-format row (dict-like) per read, for either format."""
+        if self.detect_format(path) == "wide":
+            for chunk in pd.read_csv(path, chunksize=self.chunksize,
+                                     dtype=str, low_memory=False):
+                for _, row in chunk.iterrows():
+                    yield row
+            return
+        yield from self._iter_long_rows(path)
+
+    def _iter_long_rows(self, path: Path):
+        """Collapse the long (one-row-per-hit) format into one row per read.
+
+        Requires all rows of a read to be contiguous (true for the public
+        file, which is sorted by read_id).
+        """
+        seen: set = set()
+        cur, filename, barcode = None, "", ""
+        strands, spans, motifs = [], [], []
+
+        def collapse():
+            return {
+                "read_id":       cur,
+                "filename":      filename,
+                "HW_Address":    barcode,
+                "strand":        "|".join(strands),
+                "start_end":     "|".join(spans),
+                "library_motif": "|".join(motifs),
+            }
+
+        for chunk in pd.read_csv(
+            path, sep=" ", header=None, names=self.LONG_COLUMNS,
+            dtype=str, chunksize=self.chunksize * 5,
+        ):
+            for rid, fn, bc, st, s, e, mo in zip(
+                chunk["read_id"], chunk["filename"], chunk["barcode"],
+                chunk["strand"], chunk["start"], chunk["end"], chunk["motif"],
+            ):
+                if rid != cur:
+                    if cur is not None:
+                        yield collapse()
+                    if rid in seen:
+                        raise ValueError(
+                            f"{path} is not grouped by read_id (read {rid} "
+                            "reappears). Sort the file by read_id first."
+                        )
+                    seen.add(rid)
+                    cur, filename, barcode = rid, fn, bc
+                    strands, spans, motifs = [], [], []
+                strands.append(st)
+                spans.append(f"{s}-{e}")
+                motifs.append(mo)
+        if cur is not None:
+            yield collapse()
+
     def build(
         self,
         master_db_path: Path,
         max_reads: Optional[int] = None,
+        only_read_ids: Optional[set] = None,
     ) -> Dict[str, LabelRecord]:
         """
-        Parse master_db.csv and build label records.
+        Parse a master database and build label records.
 
         Args:
-            master_db_path: Path to master_db.csv
+            master_db_path: Path to master_db.csv (wide format) or the public
+                            HELIX01-04_master_db.txt (long format) — detected
+                            automatically.
             max_reads:      Optional cap (for quick tests)
+            only_read_ids:  Optional set of read IDs; all other reads are skipped
 
         Returns:
             {read_id: LabelRecord} dict
@@ -160,34 +239,25 @@ class LabelBuilder:
         total_skipped_strand = 0
         total_skipped_few    = 0
 
-        for chunk in pd.read_csv(
-            master_db_path,
-            chunksize  = self.chunksize,
-            dtype      = str,
-            low_memory = False,
-        ):
-            for _, row in chunk.iterrows():
-                total_seen += 1
+        for row in self._iter_rows(Path(master_db_path)):
+            total_seen += 1
+            if only_read_ids is not None and row.get("read_id") not in only_read_ids:
+                continue
 
-                rec = self._process_row(row)
-                if rec is None:
-                    # Determine skip reason for stats
-                    motifs = parse_pipe_delimited_motifs(row.get("library_motif", ""))
-                    strands = parse_pipe_delimited_strand(row.get("strand", ""))
-                    orient = self._classify_orientation(strands)
-                    if self.forward_strand_only and orient != "plus":
-                        total_skipped_strand += 1
-                    else:
-                        total_skipped_few += 1
-                    continue
-
+            rec = self._process_row(row)
+            if rec is None:
+                # Determine skip reason for stats
+                strands = parse_pipe_delimited_strand(row.get("strand", ""))
+                orient = self._classify_orientation(strands)
+                if self.forward_strand_only and orient != "plus":
+                    total_skipped_strand += 1
+                else:
+                    total_skipped_few += 1
+            else:
                 records[rec.read_id] = rec
 
-                if max_reads and len(records) >= max_reads:
-                    break
-
             if total_seen % 500_000 == 0:
-                logger.info(f"  Processed {total_seen:,} rows, "
+                logger.info(f"  Processed {total_seen:,} reads, "
                             f"kept {len(records):,}…")
 
             if max_reads and len(records) >= max_reads:

@@ -5,7 +5,7 @@ Produces confusion matrix, per-cycle accuracy breakdown, decoder comparison,
 and information recovery curves.
 
 Usage:
-    PYTHONPATH=. python3 notebooks/paper_analysis.py
+    python3.12 notebooks/paper_analysis.py
 """
 
 import sys, json, pickle

@@ -46,6 +46,7 @@ def evaluate_model(
     checkpoint_path: Path,
     test_index_path: Path,
     results_dir:     Path,
+    library_path:    Optional[Path] = None,
     batch_size:      int = 4,
     max_signal_len:  int = 80_000,
     n_samples:       Optional[int] = None,
@@ -71,13 +72,16 @@ def evaluate_model(
     logger.info(f"Evaluating [{arch}] on {device}")
 
     # Load components
-    lib = MotifLibrary(COMPLETED_LIBRARY_PATH)
+    if library_path is None:
+        library_path = COMPLETED_LIBRARY_PATH
+    lib = MotifLibrary(library_path)
     decoder = GreedyCTCDecoder(labels=lib.label_names, blank=0)
 
     # Load model
     ckpt = torch.load(checkpoint_path, map_location=device, weights_only=False)
+    state_dict = ckpt.get("model", ckpt)
     model = build_model(arch, n_classes=lib.n_classes).to(device)
-    model.load_state_dict(ckpt["model"])
+    model.load_state_dict(state_dict)
     model.eval()
 
     # Load test index
@@ -168,6 +172,7 @@ def compare_all_architectures(
     checkpoint_base: Path,
     test_index_path: Path,
     results_dir:     Path,
+    library_path:    Optional[Path] = None,
 ):
     """Evaluate all three architectures and produce a comparison table."""
     archs = ["benchmark", "conformer", "causal"]
@@ -178,7 +183,13 @@ def compare_all_architectures(
         if not ckpt_path.exists():
             logger.warning(f"No checkpoint for {arch} at {ckpt_path}, skipping")
             continue
-        metrics = evaluate_model(arch, ckpt_path, test_index_path, results_dir)
+        metrics = evaluate_model(
+            arch=arch,
+            checkpoint_path=ckpt_path,
+            test_index_path=test_index_path,
+            results_dir=results_dir,
+            library_path=library_path,
+        )
         all_metrics[arch] = metrics
 
     # Print comparison table
@@ -199,12 +210,21 @@ def compare_all_architectures(
 
 
 def main():
+    from config import COMPLETED_LIBRARY_PATH, PROCESSED_DATA_DIR
+
+    default_test_idx = PROCESSED_DATA_DIR / "dataset_index" / "dataset_test.pkl"
+    if not default_test_idx.exists():
+        default_test_idx = Path("data/dataset_index/dataset_test.pkl")
+
     p = argparse.ArgumentParser(description="Evaluate ConformerCaller models")
     p.add_argument("--checkpoint",  type=Path, default=None)
     p.add_argument("--arch",        default="conformer",
                    choices=["benchmark", "conformer", "causal"])
+    p.add_argument("--library",     type=Path, default=COMPLETED_LIBRARY_PATH,
+                   help="Path to completed_library.csv (default: config.COMPLETED_LIBRARY_PATH)")
     p.add_argument("--test-index",  type=Path,
-                   default=Path("data/dataset_index/dataset_test.pkl"), help="Path to dataset_test.pkl (default: data/dataset_index/dataset_test.pkl)")
+                   default=default_test_idx,
+                   help=f"Path to dataset_test.pkl (default: {default_test_idx})")
     p.add_argument("--results-dir", type=Path, default=Path("results"))
     p.add_argument("--compare-all", action="store_true",
                    help="Evaluate all architectures")
@@ -219,6 +239,7 @@ def main():
             args.checkpoint_base,
             args.test_index,
             args.results_dir,
+            library_path=args.library,
         )
     else:
         if not args.checkpoint:
@@ -228,6 +249,7 @@ def main():
             checkpoint_path = args.checkpoint,
             test_index_path = args.test_index,
             results_dir     = args.results_dir,
+            library_path    = args.library,
             n_samples       = args.n_samples,
         )
 
