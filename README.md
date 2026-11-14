@@ -8,7 +8,7 @@ Official implementation and pretrained models for **"ConformerCaller: Direct Mot
 
 ---
 
-## 📌 Overview
+## Overview
 
 Motif-based combinatorial DNA synthesis enables high-density, low-cost digital data archiving by assembling predefined short sequences (motifs) into structured payload strands. However, decoding digital information from raw Oxford Nanopore Technologies (ONT) ionic current squiggles has traditionally relied on a decoupled, two-stage pipeline:
 
@@ -25,10 +25,10 @@ This decoupled paradigm suffers from **compound error propagation**: insertion, 
 
 ---
 
-## 🚀 Key Highlights & Results
+## Key Highlights & Results
 
 - **92.1% Motif Detection Rate**: Directly decodes raw electrical signals on a held-out test split of 66,843 empirical reads.
-- **90.4% Mean Per-Cycle Accuracy**: Consistently high classification accuracy across all eight payload cycles ($C_3$–$C_{10}$).
+- **90.4% Mean Per-Cycle Accuracy**: Consistently high classification accuracy across all eight payload cycles $(C_3-C_{10})$.
 - **Zero Cross-Cycle Confusion**: 100% of all 31,033 observed misclassifications occurred strictly within the true cycle index. The model naturally learns macromolecular physical ordering without explicit positional tokens.
 - **$2.8\times$ Reduction in Sequencing Coverage**: Lowers the read coverage required to reach 95% payload information recovery from 14 reads down to 5 reads.
 - **Real-Time Portable Inference**: Achieves 129.7 reads/sec with a mean latency of 7.7 ms per read on standard consumer silicon.
@@ -48,7 +48,7 @@ This decoupled paradigm suffers from **compound error propagation**: insertion, 
 
 ---
 
-## 🧠 Model Architecture
+## Model Architecture
 
 ConformerCaller comprises three core functional stages totaling **11.02M parameters**:
 
@@ -62,7 +62,7 @@ ConformerCaller comprises three core functional stages totaling **11.02M paramet
 
 ---
 
-## 📂 Repository Structure
+## Repository Structure
 
 ```
 ConformerCaller/
@@ -125,7 +125,7 @@ ConformerCaller/
 
 ---
 
-## ⚙️ Installation
+## Installation
 
 ### 1. Clone the Repository
 ```bash
@@ -149,7 +149,7 @@ pip install -r requirements.txt
 
 ---
 
-## 📦 Data Preparation (Public Zenodo & OSF Dataset)
+## Data Preparation (Public Zenodo & OSF Dataset)
 
 All data required to run inference, reproduce test evaluation, or retrain ConformerCaller are publicly archived across two Zenodo records and an OSF repository.
 
@@ -184,7 +184,7 @@ export CONFORMERCALLER_DATA_ROOT=/path/to/data_root
 
 ---
 
-## ⚡ Quickstart: Inference on Raw Reads
+## Quickstart: Inference on Raw Reads
 
 Run inference on raw FAST5 files using the provided pretrained model:
 
@@ -207,7 +207,7 @@ read_id,predicted_motifs,n_motifs,confidence
 
 ---
 
-## 📊 Reproducing Paper Results & Figures
+## Reproducing Paper Results & Figures
 
 ### 1. Full Test Set Evaluation (66,843 Reads)
 With `CONFORMERCALLER_DATA_ROOT` prepared and exported, reproduce the dataset splits, signal shards, and test evaluation in three commands:
@@ -242,7 +242,7 @@ PYTHONPATH=. python notebooks/paper_analysis.py
 
 ---
 
-## 🏋️ Model Training
+## Model Training
 
 ### Local Training
 After building the dataset index (Step 1 above), train ConformerCaller locally from scratch (use `--smoke-test` for a quick 5-batch pipeline verification):
@@ -263,7 +263,7 @@ For large-scale training across all 501,330 training reads:
 
 ---
 
-## 🔒 Data Availability
+## Data Availability
 
 The raw FAST5 sequencing data and per-read motif label assignments used in this work are publicly archived on Zenodo under the Helixworks Technologies dataset series **"Sequencing Runs from Motif-based DNA Data Storage Systems"**, and the motif catalog is archived on OSF:
 
@@ -280,7 +280,7 @@ Code, exact paper split manifests (`splits/{train,val,test}_read_ids.txt.gz`), t
 
 ---
 
-## 📄 License
+## License
 
 This project uses a custom license. See the [LICENSE](LICENSE) file for details.
 
