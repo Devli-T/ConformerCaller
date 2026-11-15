@@ -90,7 +90,7 @@ def evaluate_model(
         test_index.entries = test_index.entries[:n_samples]
     logger.info(f"  Test set: {len(test_index):,} reads")
 
-    reader = Fast5Reader(normalize=True)
+    reader = Fast5Reader(normalise=True)
     test_ds = MotifSignalDataset(test_index, reader, max_signal_len)
     test_loader = DataLoader(
         test_ds, batch_size=batch_size,

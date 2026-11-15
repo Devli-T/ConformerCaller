@@ -47,7 +47,7 @@ except ImportError:
     pass
 import h5py
 
-from src.data.fast5_reader import mad_normalize
+from src.data.fast5_reader import mad_normalise
 
 logging.basicConfig(
     level=logging.INFO,
@@ -152,7 +152,7 @@ def extract_shards(
                             continue
                         if len(raw) > MAX_SIGNAL_LEN:
                             raw = raw[:MAX_SIGNAL_LEN]
-                        shard_signals[rid] = mad_normalize(raw).astype(np.float32)
+                        shard_signals[rid] = mad_normalise(raw).astype(np.float32)
             except Exception as e:
                 logger.warning(f"  Error reading {f5path.name}: {e}")
 

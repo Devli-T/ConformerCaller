@@ -188,7 +188,7 @@ def predict_fast5_dir(
     from tqdm import tqdm
     from config import DEVICE
     from src.data.motif_library import MotifLibrary
-    from src.data.fast5_reader import mad_normalize
+    from src.data.fast5_reader import mad_normalise
 
     # Resolve paths
     library_path = resolve_library_path(library_path)
@@ -233,7 +233,7 @@ def predict_fast5_dir(
                         except KeyError:
                             continue
 
-                        norm = mad_normalize(raw)
+                        norm = mad_normalise(raw)
                         batch_ids.append(read_id)
                         batch_sigs.append(norm)
 

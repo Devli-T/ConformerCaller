@@ -5,7 +5,7 @@ Reads raw electrical signal data from FAST5 (HDF5) files produced
 by Oxford Nanopore sequencers. Supports the multi-read FAST5 format
 used by the Helixworks dataset.
 
-Signal normalization uses Median Absolute Deviation (MAD), the standard
+Signal normalisation uses Median Absolute Deviation (MAD), the standard
 approach for nanopore data as used in Guppy and Bonito basecallers.
 """
 
@@ -29,34 +29,34 @@ except ImportError:
 
 logger = logging.getLogger(__name__)
 
-# MAD normalization scale factor (converts MAD to approximate std dev)
+# MAD normalisation scale factor (converts MAD to approximate std dev)
 _MAD_SCALE = 1.4826
 
 
-def mad_normalize(signal: np.ndarray,
+def mad_normalise(signal: np.ndarray,
                   clip_min: float = -5.0,
                   clip_max: float = 5.0) -> np.ndarray:
     """
-    Normalize a raw nanopore signal using Median Absolute Deviation.
+    Normalise a raw nanopore signal using Median Absolute Deviation.
 
-    This is the standard normalization for nanopore data, used by Guppy,
-    Bonito.
+    This is the standard normalisation for nanopore data, used by Guppy
+    and Bonito.
 
     Args:
         signal:   Raw integer signal array from FAST5
-        clip_min: Lower clip value after normalization
-        clip_max: Upper clip value after normalization
+        clip_min: Lower clip value after normalisation
+        clip_max: Upper clip value after normalisation
 
     Returns:
-        Normalized float32 signal
+        Normalised float32 signal
     """
     signal = signal.astype(np.float32)
     median = np.median(signal)
     mad    = np.median(np.abs(signal - median))
     if mad < 1e-6:
         mad = 1.0  # Avoid divide-by-zero for flat signals
-    normalized = (signal - median) / (_MAD_SCALE * mad)
-    return np.clip(normalized, clip_min, clip_max).astype(np.float32)
+    normalised = (signal - median) / (_MAD_SCALE * mad)
+    return np.clip(normalised, clip_min, clip_max).astype(np.float32)
 
 
 def _find_raw_signal(group: h5py.Group) -> Optional[np.ndarray]:
@@ -103,14 +103,14 @@ class Fast5Reader:
     Reads raw signals from multi-read FAST5 files.
 
     Usage:
-        reader = Fast5Reader(normalize=True)
+        reader = Fast5Reader(normalise=True)
         for read_id, signal in reader.iter_reads("/path/to/file.fast5"):
             process(read_id, signal)
     """
 
     def __init__(
         self,
-        normalize:    bool  = True,
+        normalise:    bool  = True,
         clip_min:     float = -5.0,
         clip_max:     float = 5.0,
         min_length:   int   = 1000,
@@ -119,13 +119,13 @@ class Fast5Reader:
     ):
         """
         Args:
-            normalize:        Apply MAD normalization to signals
-            clip_min/max:     Clipping bounds after normalization
+            normalise:        Apply MAD normalisation to signals
+            clip_min/max:     Clipping bounds after normalisation
             min_length:       Skip reads shorter than this (likely fragments)
             max_length:       Skip reads longer than this (memory guard)
             read_ids_filter:  If provided, only yield reads in this set
         """
-        self.normalize       = normalize
+        self.normalise       = normalise
         self.clip_min        = clip_min
         self.clip_max        = clip_max
         self.min_length      = min_length
@@ -170,9 +170,9 @@ class Fast5Reader:
                     if len(signal) > self.max_length:
                         signal = signal[:self.max_length]
 
-                    # Normalize
-                    if self.normalize:
-                        signal = mad_normalize(signal, self.clip_min, self.clip_max)
+                    # Normalise
+                    if self.normalise:
+                        signal = mad_normalise(signal, self.clip_min, self.clip_max)
                     else:
                         signal = signal.astype(np.float32)
 

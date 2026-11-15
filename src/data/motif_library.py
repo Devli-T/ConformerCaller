@@ -58,7 +58,7 @@ class MotifLibrary:
 
     def __init__(self, completed_library_path: Optional[Path] = None):
         """
-        Initialize the motif library.
+        Initialise the motif library.
 
         Args:
             completed_library_path: Path to completed_library.csv.
@@ -111,7 +111,7 @@ class MotifLibrary:
             )
             self.motifs[name] = motif
 
-            # Categorize
+            # Categorise
             if cycle_type == "payload":
                 self._payload_motifs[name] = motif
             elif cycle_type == "address":

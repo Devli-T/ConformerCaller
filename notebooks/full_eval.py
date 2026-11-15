@@ -94,7 +94,7 @@ def main():
         sys.exit(f"No signal shards found in {shard_dir}. Run extract_signals_sharded.py --splits test first.")
     print(f"Signal shards: {len(shard_files)}\n")
 
-    reader  = Fast5Reader(normalize=True)
+    reader  = Fast5Reader(normalise=True)
     decoder = GreedyCTCDecoder(labels=lib.label_names, blank=0)
 
     g_lev, g_det, g_exact, g_pred_lens, g_tgt_lens = [], [], 0, [], []   # greedy

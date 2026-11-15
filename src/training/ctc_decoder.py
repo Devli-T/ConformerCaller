@@ -5,7 +5,7 @@ Converts model output log-probabilities into motif label sequences.
 
 Decoders:
   - GreedyCTCDecoder:    Fast best-path decoding (argmax per timestep)
-  - BeamSearchCTCDecoder: Beam search with length normalization
+  - BeamSearchCTCDecoder: Beam search with length normalisation
   - decode_with_confidence: Greedy with confidence threshold filtering
 """
 
@@ -108,7 +108,7 @@ class BeamEntry:
     neg_score: float  # negative log prob (for min-heap ordering)
     sequence: tuple = field(compare=False)  # tuple of label indices (no blanks)
     last_label: int = field(compare=False)  # last emitted label (for CTC merge rule)
-    raw_log_prob: float = field(compare=False)  # unnormalized log probability
+    raw_log_prob: float = field(compare=False)  # unnormalised log probability
 
 
 class BeamSearchCTCDecoder(nn.Module):
@@ -161,7 +161,7 @@ class BeamSearchCTCDecoder(nn.Module):
         """
         T, C = log_probs.shape
 
-        # Initialize: each beam is (sequence_tuple, last_label, raw_log_prob)
+        # Initialise: each beam is (sequence_tuple, last_label, raw_log_prob)
         beams = [((), -1, 0.0)]  # (seq, last_label, log_prob)
 
         for t in range(T):

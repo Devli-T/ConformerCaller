@@ -14,9 +14,6 @@ are not in the manifest are dropped; if only part of the FAST5 data has been
 extracted you therefore get the corresponding subset of each paper split.
 Use ``--random-split`` to draw a fresh seeded random split instead.
 
-Approximate run time on a laptop with the data on an external drive:
-  labels ≈ 2–10 min · FAST5 index ≈ 15 min (all 1,131 files) · split < 1 min.
-
 Usage:
     export CONFORMERCALLER_DATA_ROOT=/path/to/data_root
     python src/data/build_training_set.py                 # paper split

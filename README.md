@@ -269,8 +269,8 @@ The raw FAST5 sequencing data and per-read motif label assignments used in this 
 
 | Source | Identifier / Link | Contents |
 |---|---|---|
-| **Zenodo — HELIX01-04\_Part\_01** | [10.5281/zenodo.15839390](https://doi.org/10.5281/zenodo.15839390) ([record](https://zenodo.org/records/15839390)) | `HELIX01-04_master_db.txt`, `HELIX01-04-encoded.csv`, and `HELIX01-04_FAST5_0-65.7z` through `660-725.7z` (FAST5 files `0`–`725`) |
-| **Zenodo — HELIX01-04\_Part\_02** | [10.5281/zenodo.15848607](https://doi.org/10.5281/zenodo.15848607) ([record](https://zenodo.org/records/15848607)) | `HELIX01-04_FAST5_726-791.7z` through `1122-1130.7z` (FAST5 files `726`–`1130`) |
+| **Zenodo — HELIX01-04\_Part\_01** | [10.5281/zenodo.15839390](https://doi.org/10.5281/zenodo.15839390) ([record](https://zenodo.org/records/15839390)) | `HELIX01-04_master_db.txt`, `HELIX01-04-encoded.csv`, and multi-read FAST5 archives (Part 1) |
+| **Zenodo — HELIX01-04\_Part\_02** | [10.5281/zenodo.15848607](https://doi.org/10.5281/zenodo.15848607) ([record](https://zenodo.org/records/15848607)) | Multi-read FAST5 archives (Part 2) |
 | **OSF — Motif-based DNA Data Storage System** | [https://osf.io/pcdtj/](https://osf.io/pcdtj/) | `completed_library.csv` and `motif_design_sequences.csv` (under `DNA Construct Sequences/`) |
 
 **Files used:** All 1,131 multi-read FAST5 files across both Zenodo records, paired with `HELIX01-04_master_db.txt` (Zenodo Part 01) and `completed_library.csv` (OSF), yielding 696,435 quality-filtered reads ($\ge 4$ payload cycles) and 668,438 reads in the final dataset splits (501,330 training / 100,265 validation / 66,843 test; see `src/data/build_training_set.py`). Both Zenodo records and `completed_library.csv` from OSF are required to reproduce the full dataset.

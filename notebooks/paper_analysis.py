@@ -87,7 +87,7 @@ print(f"Checkpoint: epoch {ckpt['epoch']}, val_loss={ckpt['best_val_loss']:.4f}"
 test_idx = MotifDatasetIndex.load(IDX_DIR / "dataset_test.pkl")
 npz = np.load(str(IDX_DIR / "signals.npz"), allow_pickle=False)
 signals_cache = {k: npz[k] for k in npz.files}
-reader = Fast5Reader(normalize=True)
+reader = Fast5Reader(normalise=True)
 test_ds = MotifSignalDataset(test_idx, reader, MAX_SIG_LEN, signals_cache)
 test_loader = DataLoader(test_ds, batch_size=BATCH_SIZE, collate_fn=motif_collate_fn, shuffle=False)
 

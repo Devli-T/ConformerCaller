@@ -246,7 +246,7 @@ def build_dataloaders(
         signals_cache: Pre-extracted {read_id: signal} dict for fast I/O.
                        If None, falls back to on-the-fly FAST5 reading.
     """
-    reader = Fast5Reader(normalize=True)
+    reader = Fast5Reader(normalise=True)
 
     train_ds = MotifSignalDataset(train_index, reader, max_signal_len, signals_cache)
     val_ds   = MotifSignalDataset(val_index,   reader, max_signal_len, signals_cache)
